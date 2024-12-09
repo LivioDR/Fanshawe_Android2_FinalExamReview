@@ -1,5 +1,7 @@
 package com.example.livioreinoso1165606.finalexamreview.view
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -49,6 +51,7 @@ class LoginActivity : AppCompatActivity() {
                             "Authentication succeeded for user ${auth.currentUser?.uid}",
                             Toast.LENGTH_LONG
                         ).show()
+                        moveToWeatherScreen(this)
                     } else {
                         // If sign in fails, display a message to the user.
                         Log.w("firebase", "signInWithEmail:failure", task.exception)
@@ -71,7 +74,12 @@ class LoginActivity : AppCompatActivity() {
         // Check if user is signed in (non-null) and update UI accordingly.
         val currentUser = auth.currentUser
         if (currentUser != null) {
-            // TODO: move the user to the next screen
+            moveToWeatherScreen(this)
         }
+    }
+
+    private fun moveToWeatherScreen(context: Context):Unit{
+        val intent = Intent(context, WeatherActivity::class.java)
+        startActivity(intent)
     }
 }
