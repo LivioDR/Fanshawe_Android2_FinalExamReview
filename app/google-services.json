@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "662819944425",
+    "project_id": "fanshawe-android2",
+    "storage_bucket": "fanshawe-android2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:662819944425:android:e8223926b52dec1552bd78",
+        "android_client_info": {
+          "package_name": "com.example.livioreinoso1165606.finalexamreview"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7BtD5dj7bSS4J_66-YFhXelxlSD9QMr4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:662819944425:android:fa6b4a8e0971aebc52bd78",
+        "android_client_info": {
+          "package_name": "com.example.livioreinoso1165606.firebase_demo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7BtD5dj7bSS4J_66-YFhXelxlSD9QMr4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
