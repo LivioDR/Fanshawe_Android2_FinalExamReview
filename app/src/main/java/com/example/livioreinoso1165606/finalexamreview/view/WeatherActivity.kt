@@ -6,18 +6,29 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.RecyclerView
 import com.example.livioreinoso1165606.finalexamreview.R
+import com.example.livioreinoso1165606.finalexamreview.database.WeatherDao
+import com.example.livioreinoso1165606.finalexamreview.database.WeatherRoomDatabase
 import com.example.livioreinoso1165606.finalexamreview.databinding.ActivityWeatherBinding
+import com.example.livioreinoso1165606.finalexamreview.model.WeatherEntity
+import com.example.livioreinoso1165606.finalexamreview.repository.WeatherRepository
 import com.example.livioreinoso1165606.finalexamreview.viewModel.WeatherViewModel
+import com.example.livioreinoso1165606.finalexamreview.viewModel.WeatherViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.launch
 
 class WeatherActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var binding: ActivityWeatherBinding
-    private val weatherViewModel:WeatherViewModel by viewModels()
+
+    private val weatherViewModel: WeatherViewModel by viewModels {
+        WeatherViewModelFactory(WeatherRepository(WeatherRoomDatabase.getDatabase(this).weatherDao()))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,24 +53,33 @@ class WeatherActivity : AppCompatActivity() {
             finish()
         }
 
-        val weatherData = weatherViewModel.getWeatherData().observe(this) { data ->
+        val weatherData = weatherViewModel.weatherData.observe(this) { data ->
+            // guarding if the weatherData list is empty
+            if (data.size == 0)
+                return@observe
+
+            // TODO: change this from single display to recyclerView
+            val lastData = data.first()
+
             binding.resultText.text = """
                 Welcome ${auth.currentUser?.uid}!
             
-            Current data for ${data.location.name}, ${data.location.region}, ${data.location.country}
-            at ${data.location.localtime}
+            Current data for ${lastData.city}
+            at ${lastData.localtime}
             
-            Temperature: ${data.current.temp_c}°C
-            Feels like: ${data.current.feelslike_c}°C
+            Temperature: ${lastData.temp_c}°C
+            Feels like: ${lastData.feels_like}°C
             
-            Current condition is ${data.current.condition.text}
+            Current condition is ${lastData.condition}
             
             """.trimIndent()
         }
 
         binding.searchButton.setOnClickListener{
             val city = binding.weatherSearch.text.toString()
-            weatherViewModel.fetchWeatherData(city)
+            lifecycleScope.launch {
+                weatherViewModel.fetchData(city)
+            }
         }
     }
 }

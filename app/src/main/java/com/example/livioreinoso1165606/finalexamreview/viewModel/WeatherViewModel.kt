@@ -1,26 +1,43 @@
 package com.example.livioreinoso1165606.finalexamreview.viewModel
 
-import android.util.Log
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.livioreinoso1165606.finalexamreview.model.WeatherResult
-import com.example.livioreinoso1165606.finalexamreview.network.RetrofitServiceFactory
+import com.example.livioreinoso1165606.finalexamreview.model.WeatherEntity
+import com.example.livioreinoso1165606.finalexamreview.repository.WeatherRepository
 import kotlinx.coroutines.launch
 
-class WeatherViewModel:ViewModel() {
+class WeatherViewModel(private val repository: WeatherRepository):ViewModel() {
 
-    var weatherData = MutableLiveData<WeatherResult>()
+    // Using LiveData and caching what weatherData returns has several benefits:
+    // - We can put an observer on the data (instead of polling for changes) and only update the
+    //   the UI when the data actually changes.
+    // - Repository is completely separated from the UI through the ViewModel.
+    var weatherData: LiveData<List<WeatherEntity>> = repository.weatherData
 
-    fun getWeatherData(): LiveData<WeatherResult> = weatherData
-
-    val service = RetrofitServiceFactory.makeRetrofitService()
-
-    fun fetchWeatherData(location:String){
-        viewModelScope.launch {
-            weatherData.value = service.getWeather(location)
-        }
+    /**
+     * Launching a new coroutine to insert the data in a non-blocking way
+     */
+    fun insert(weather: WeatherEntity) = viewModelScope.launch {
+        repository.insert(weather)
     }
 
+    fun deleteAll() = viewModelScope.launch {
+        repository.deleteAll()
+    }
+
+    fun fetchData(location:String) = viewModelScope.launch {
+        repository.fetchWeatherData(location)
+    }
+}
+
+class WeatherViewModelFactory(private val repository: WeatherRepository) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(WeatherViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return WeatherViewModel(repository) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
 }
