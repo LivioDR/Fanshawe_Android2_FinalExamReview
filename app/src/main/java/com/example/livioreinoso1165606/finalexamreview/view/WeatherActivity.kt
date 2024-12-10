@@ -7,12 +7,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.RecyclerView
 import com.example.livioreinoso1165606.finalexamreview.R
-import com.example.livioreinoso1165606.finalexamreview.database.WeatherDao
 import com.example.livioreinoso1165606.finalexamreview.database.WeatherRoomDatabase
 import com.example.livioreinoso1165606.finalexamreview.databinding.ActivityWeatherBinding
-import com.example.livioreinoso1165606.finalexamreview.model.WeatherEntity
 import com.example.livioreinoso1165606.finalexamreview.repository.WeatherRepository
 import com.example.livioreinoso1165606.finalexamreview.viewModel.WeatherViewModel
 import com.example.livioreinoso1165606.finalexamreview.viewModel.WeatherViewModelFactory
@@ -26,8 +23,16 @@ class WeatherActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var binding: ActivityWeatherBinding
 
+    private val database by lazy {
+        WeatherRoomDatabase.getDatabase(this)
+    }
+
+    private val repository by lazy {
+        WeatherRepository(database.weatherDao())
+    }
+
     private val weatherViewModel: WeatherViewModel by viewModels {
-        WeatherViewModelFactory(WeatherRepository(WeatherRoomDatabase.getDatabase(this).weatherDao()))
+        WeatherViewModelFactory(repository)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,8 +60,12 @@ class WeatherActivity : AppCompatActivity() {
 
         val weatherData = weatherViewModel.weatherData.observe(this) { data ->
             // guarding if the weatherData list is empty
-            if (data.size == 0)
+            if (data.size == 0){
+                lifecycleScope.launch {
+                    WeatherRoomDatabase.populateDatabase(database.weatherDao())
+                }
                 return@observe
+            }
 
             // TODO: change this from single display to recyclerView
             val lastData = data.first()
