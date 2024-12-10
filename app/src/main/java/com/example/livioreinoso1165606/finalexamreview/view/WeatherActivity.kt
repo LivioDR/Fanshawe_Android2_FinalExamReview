@@ -7,9 +7,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.livioreinoso1165606.finalexamreview.R
 import com.example.livioreinoso1165606.finalexamreview.database.WeatherRoomDatabase
 import com.example.livioreinoso1165606.finalexamreview.databinding.ActivityWeatherBinding
+import com.example.livioreinoso1165606.finalexamreview.model.WeatherEntity
+import com.example.livioreinoso1165606.finalexamreview.recyclerView.WeatherListAdapter
 import com.example.livioreinoso1165606.finalexamreview.repository.WeatherRepository
 import com.example.livioreinoso1165606.finalexamreview.viewModel.WeatherViewModel
 import com.example.livioreinoso1165606.finalexamreview.viewModel.WeatherViewModelFactory
@@ -22,6 +26,9 @@ class WeatherActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var binding: ActivityWeatherBinding
+
+    private val weatherList = mutableListOf<WeatherEntity>()
+    private lateinit var recyclerView: RecyclerView
 
     private val database by lazy {
         WeatherRoomDatabase.getDatabase(this)
@@ -46,6 +53,7 @@ class WeatherActivity : AppCompatActivity() {
             insets
         }
 
+        // getting the auth info to display the user ID
         auth = Firebase.auth
 
         binding.resultText.text = """
@@ -53,11 +61,20 @@ class WeatherActivity : AppCompatActivity() {
             Type a city name and press the 'Search' button to start
         """.trimIndent()
 
+        // adding the logout function to the logout button
         binding.logout.setOnClickListener{
             Firebase.auth.signOut()
             finish()
         }
 
+        // setting the recycler view
+        recyclerView = findViewById(R.id.recyclerView)
+        // and the adapter
+        val adapter = WeatherListAdapter(weatherList)
+        recyclerView.adapter = adapter
+        recyclerView.layoutManager = LinearLayoutManager(this)
+
+        // then observing the data for changes
         val weatherData = weatherViewModel.weatherData.observe(this) { data ->
             // guarding if the weatherData list is empty
             if (data.size == 0){
@@ -67,21 +84,17 @@ class WeatherActivity : AppCompatActivity() {
                 return@observe
             }
 
-            // TODO: change this from single display to recyclerView
-            val lastData = data.first()
+            // removing the instructions from the text view
+            binding.resultText.text = "Welcome ${auth.currentUser?.uid}"
 
-            binding.resultText.text = """
-                Welcome ${auth.currentUser?.uid}!
-            
-            Current data for ${lastData.city}
-            at ${lastData.localtime}
-            
-            Temperature: ${lastData.temp_c}°C
-            Feels like: ${lastData.feels_like}°C
-            
-            Current condition is ${lastData.condition}
-            
-            """.trimIndent()
+            // and updating the weather list in memory to then notify the recycler view
+            data.let {
+                weatherList.clear()
+                weatherList.addAll(it)
+                recyclerView?.adapter?.notifyDataSetChanged()
+            }
+
+
         }
 
         binding.searchButton.setOnClickListener{
