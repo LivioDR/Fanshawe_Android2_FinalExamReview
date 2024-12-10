@@ -4,6 +4,10 @@ plugins {
 
     // Add the Google services Gradle plugin
     id("com.google.gms.google-services")
+
+    // kapt plugin for Room
+//    id("com.google.devtools.ksp")
+    kotlin("kapt")
 }
 
 android {
@@ -65,5 +69,15 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0")
 
+    // adding Room dependencies
+    val room_version = "2.6.0"
+
+    implementation("androidx.room:room-runtime:$room_version")
+    // If this project uses any Kotlin source, use Kotlin Symbol Processing (KSP)
+    // See Add the KSP plugin to your project
+//    ksp("androidx.room:room-compiler:$room_version")
+    // KAPT implementation
+    kapt("androidx.room:room-compiler:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
 
 }
